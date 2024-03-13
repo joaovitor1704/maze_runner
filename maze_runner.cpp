@@ -1,8 +1,13 @@
 #include <stdio.h>
+#include <cstdio>
 #include <stack>
+#include <iostream>
+#include <vector>
+
+using namespace std;
 
 // Matriz de char representnado o labirinto
-char** maze; // Voce também pode representar o labirinto como um vetor de vetores de char (vector<vector<char>>)
+vector<vector<char>>maze; // Voce também pode representar o labirinto como um vetor de vetores de char (vector<vector<char>>)
 
 // Numero de linhas e colunas do labirinto
 int num_rows;
@@ -39,20 +44,35 @@ std::stack<pos_t> valid_positions;
 pos_t load_maze(const char* file_name) {
 	pos_t initial_pos;
 	// Abre o arquivo para leitura (fopen)
-
+	FILE *arq;
+	arq = fopen(file_name, "r");
+	if(arq == NULL){
+		std::cout<<"erro";
+	}
 	// Le o numero de linhas e colunas (fscanf) 
 	// e salva em num_rows e num_cols
+	fscanf(arq, "%d %d\n", &num_rows, &num_cols);
+
 
 	// Aloca a matriz maze (malloc)
-	for (int i = 0; i < num_rows; ++i)
-		// Aloca cada linha da matriz
-	
-	for (int i = 0; i < num_rows; ++i) {
-		for (int j = 0; j < num_cols; ++j) {
-			// Le o valor da linha i+1,j do arquivo e salva na posição maze[i][j]
-			// Se o valor for 'e' salvar o valor em initial_pos
+	vector<char> caracteres;
+	for (int i = 0; i < num_rows+1; ++i){
+		caracteres.clear();
+		//fgets(linha, num_cols, arq);
+		char aux;
+			
+		for(int j = 0; j < num_cols; ++j){
+			fscanf(arq, "%c ", &aux);
+			//cout<<aux;
+			caracteres.push_back(aux);
+			if(aux == 'e'){
+				initial_pos.i = i;
+				initial_pos.j = j;
+			}
 		}
+		maze.push_back(caracteres);
 	}
+		
 	return initial_pos;
 }
 
@@ -60,7 +80,8 @@ pos_t load_maze(const char* file_name) {
 void print_maze() {
 	for (int i = 0; i < num_rows; ++i) {
 		for (int j = 0; j < num_cols; ++j) {
-			printf("%c", maze[i][j]);
+			//printf("%c", maze[i][j]);
+			cout<<maze[i][j];
 		}
 		printf("\n");
 	}
@@ -101,7 +122,9 @@ bool walk(pos_t pos) {
 
 int main(int argc, char* argv[]) {
 	// carregar o labirinto com o nome do arquivo recebido como argumento
-	pos_t initial_pos = load_maze(argv[1]);
+	pos_t initial_pos = load_maze("../data/maze2.txt");
+	print_maze();
+
 	// chamar a função de navegação
 	bool exit_found = walk(initial_pos);
 	
