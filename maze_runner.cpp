@@ -85,7 +85,7 @@ void print_maze() {
 		}
 		printf("\n");
 	}
-	usleep(100000);
+	usleep(10000);
 }
 
 
@@ -112,7 +112,6 @@ bool walk(pos_t pos) {
 	 	*/
 		maze[pos.i][pos.j] = 'o';
 		system("clear");
-		cout<<pos.i<<" "<<pos.j<<endl;
 		num = 0;
 		print_maze();
 		if (pos.i >= 0 && pos.i < num_rows+1 && pos.j + 1  >= 0 && pos.j + 1 < num_cols+1){
@@ -122,6 +121,8 @@ bool walk(pos_t pos) {
 				pos_aux.j = pos.j+1;
 				valid_positions.push(pos_aux);
 				num++;
+			} else if(maze[pos.i][pos.j+1] == 's'){
+				return true;
 			}
 			else{
 				num++;
@@ -138,6 +139,8 @@ bool walk(pos_t pos) {
 				pos_aux.j = pos.j-1;
 				valid_positions.push(pos_aux);
 				num++;
+			}else if(maze[pos.i][pos.j-1] == 's'){
+				return true;
 			}
 			else{
 				num++;
@@ -154,6 +157,8 @@ bool walk(pos_t pos) {
 				pos_aux.j = pos.j;
 				valid_positions.push(pos_aux);
 				num++;
+			}else if(maze[pos.i+1][pos.j] == 's'){
+				return true;
 			}
 			else{
 				num++;
@@ -163,13 +168,15 @@ bool walk(pos_t pos) {
 			num++;
 		}
 
-		if (pos.i-1 > 0 && pos.i-1 < num_rows+1 && pos.j >= 0 && pos.j < num_cols+1){
+		if (pos.i-1 >= 0 && pos.i-1 < num_rows+1 && pos.j >= 0 && pos.j < num_cols+1){
 			if(maze[pos.i-1][pos.j] == 'x'){
 				pos_t pos_aux;
 				pos_aux.i = pos.i-1;
 				pos_aux.j = pos.j;
 				valid_positions.push(pos_aux);
 				num++;
+			}else if(maze[pos.i-1][pos.j] == 's'){
+				return true;
 			}
 			else{
 				num++;
@@ -178,9 +185,8 @@ bool walk(pos_t pos) {
 		else{
 			num++;
 		}
-		/*cout<<" "<<endl;
-		cout<<num<<endl;
-		usleep(1000000);*/
+
+		maze[pos.i][pos.j] = '.';
 		
 	}
 	
@@ -198,14 +204,17 @@ bool walk(pos_t pos) {
 
 int main(int argc, char* argv[]) {
 	// carregar o labirinto com o nome do arquivo recebido como argumento
-	pos_t initial_pos = load_maze("../data/maze2.txt");
-	//print_maze();
-	//usleep(50000);
+	pos_t initial_pos = load_maze("../data/maze6.txt");
+
 
 	// chamar a função de navegação
 	bool exit_found = walk(initial_pos);
-	
 	// Tratar o retorno (imprimir mensagem)
-	
+	if(exit_found == true)
+	{
+		cout<<"Saída encontrada";
+	}
+
+
 	return 0;
 }
