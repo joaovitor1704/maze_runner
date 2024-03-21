@@ -57,7 +57,7 @@ pos_t load_maze(const char* file_name) {
 
 	// Aloca a matriz maze (malloc)
 	vector<char> caracteres;
-	for (int i = 0; i < num_rows+1; ++i){
+	for (int i = 0; i < num_rows; ++i){
 		caracteres.clear();
 		char aux;
 			
@@ -80,7 +80,6 @@ void print_maze() {
 
 	for (int i = 0; i < num_rows; ++i) {
 		for (int j = 0; j < num_cols; ++j) {
-			//printf("%c", maze[i][j]);
 			cout<<maze[i][j];
 		}
 		printf("\n");
@@ -97,9 +96,6 @@ bool walk(pos_t pos) {
 		// Marcar a posição atual com o símbolo '.'
 		// Limpa a tela
 		// Imprime o labirinto
-	int num = 0;
-	while (num < 4)
-	{
 		/* Dado a posição atual, verifica quais sao as próximas posições válidas
 			Checar se as posições abaixo são validas (i>0, i<num_rows, j>0, j <num_cols)
 		 	e se são posições ainda não visitadas (ou seja, caracter 'x') e inserir
@@ -112,83 +108,53 @@ bool walk(pos_t pos) {
 	 	*/
 		maze[pos.i][pos.j] = 'o';
 		system("clear");
-		num = 0;
 		print_maze();
-		if (pos.i >= 0 && pos.i < num_rows+1 && pos.j + 1  >= 0 && pos.j + 1 < num_cols+1){
+		if (pos.i >= 0 && pos.i < num_rows && pos.j + 1  > 0 && pos.j + 1 < num_cols){
 			if(maze[pos.i][pos.j+1] == 'x'){
 				pos_t pos_aux;
 				pos_aux.i = pos.i;
 				pos_aux.j = pos.j+1;
 				valid_positions.push(pos_aux);
-				num++;
 			} else if(maze[pos.i][pos.j+1] == 's'){
 				return true;
 			}
-			else{
-				num++;
-			}
-		}
-		else{
-			num++;
 		}
 
-		if (pos.i >= 0 && pos.i < num_rows+1 && pos.j - 1  >= 0 && pos.j - 1 < num_cols+1){
+		if (pos.i >= 0 && pos.i < num_rows && pos.j - 1  >= 0 && pos.j - 1 < num_cols){
 			if(maze[pos.i][pos.j-1] == 'x'){
 				pos_t pos_aux;
 				pos_aux.i = pos.i;
 				pos_aux.j = pos.j-1;
 				valid_positions.push(pos_aux);
-				num++;
 			}else if(maze[pos.i][pos.j-1] == 's'){
 				return true;
 			}
-			else{
-				num++;
-			}
-		}
-		else{
-			num++;
 		}
 
-		if (pos.i+1 > 0 && pos.i+1 < num_rows+1 && pos.j >= 0 && pos.j < num_cols+1){
+		if (pos.i+1 > 0 && pos.i+1 < num_rows && pos.j >= 0 && pos.j < num_cols){
 			if(maze[pos.i+1][pos.j] == 'x'){
 				pos_t pos_aux;
 				pos_aux.i = pos.i+1;
 				pos_aux.j = pos.j;
 				valid_positions.push(pos_aux);
-				num++;
 			}else if(maze[pos.i+1][pos.j] == 's'){
+				cout<<maze[pos.i+1][pos.j+1]<<endl;
+
 				return true;
 			}
-			else{
-				num++;
-			}
 		}
-		else{
-			num++;
-		}
-
-		if (pos.i-1 >= 0 && pos.i-1 < num_rows+1 && pos.j >= 0 && pos.j < num_cols+1){
+		
+		if (pos.i-1 >= 0 && pos.i-1 < num_rows && pos.j >= 0 && pos.j < num_cols){
 			if(maze[pos.i-1][pos.j] == 'x'){
 				pos_t pos_aux;
 				pos_aux.i = pos.i-1;
 				pos_aux.j = pos.j;
 				valid_positions.push(pos_aux);
-				num++;
 			}else if(maze[pos.i-1][pos.j] == 's'){
 				return true;
 			}
-			else{
-				num++;
-			}
 		}
-		else{
-			num++;
-		}
-
 		maze[pos.i][pos.j] = '.';
-		
-	}
 	
 		// Verifica se a pilha de posições nao esta vazia 
 		//Caso não esteja, pegar o primeiro valor de  valid_positions, remove-lo
@@ -197,14 +163,14 @@ bool walk(pos_t pos) {
 		if (!valid_positions.empty()) {
 			pos_t next_position = valid_positions.top();
 			valid_positions.pop();
-			walk(next_position);
+			return walk(next_position);
 		}
 	return false;
 }
 
 int main(int argc, char* argv[]) {
 	// carregar o labirinto com o nome do arquivo recebido como argumento
-	pos_t initial_pos = load_maze("../data/maze6.txt");
+	pos_t initial_pos = load_maze("../data/maze7.txt");
 
 
 	// chamar a função de navegação
@@ -212,7 +178,9 @@ int main(int argc, char* argv[]) {
 	// Tratar o retorno (imprimir mensagem)
 	if(exit_found == true)
 	{
-		cout<<"Saída encontrada";
+		cout<<endl<<"Saída encontrada"<<endl;
+	} else{
+		cout<<endl<<"Saída não encontrada"<<endl;
 	}
 
 
