@@ -4,6 +4,8 @@
 #include <iostream>
 #include <vector>
 #include <unistd.h>
+#include <thread>
+#include <chrono>
 
 using namespace std;
 
@@ -13,6 +15,8 @@ vector<vector<char>>maze; // Voce também pode representar o labirinto como um v
 // Numero de linhas e colunas do labirinto
 int num_rows;
 int num_cols;
+
+bool aux = false;
 
 // Representação de uma posição
 struct pos_t {
@@ -84,7 +88,7 @@ void print_maze() {
 		}
 		printf("\n");
 	}
-	usleep(10000);
+	//usleep(10000);
 }
 
 
@@ -106,77 +110,103 @@ bool walk(pos_t pos) {
 		 		- pos.i-1, pos.j
 		 	Caso alguma das posiçÕes validas seja igual a 's', retornar verdadeiro
 	 	*/
-		maze[pos.i][pos.j] = 'o';
-		system("clear");
-		print_maze();
-		if (pos.i >= 0 && pos.i < num_rows && pos.j + 1  > 0 && pos.j + 1 < num_cols){
-			if(maze[pos.i][pos.j+1] == 'x'){
-				pos_t pos_aux;
-				pos_aux.i = pos.i;
-				pos_aux.j = pos.j+1;
-				valid_positions.push(pos_aux);
-			} else if(maze[pos.i][pos.j+1] == 's'){
-				return true;
-			}
-		}
 
-		if (pos.i >= 0 && pos.i < num_rows && pos.j - 1  >= 0 && pos.j - 1 < num_cols){
-			if(maze[pos.i][pos.j-1] == 'x'){
-				pos_t pos_aux;
-				pos_aux.i = pos.i;
-				pos_aux.j = pos.j-1;
-				valid_positions.push(pos_aux);
-			}else if(maze[pos.i][pos.j-1] == 's'){
-				return true;
-			}
-		}
-
-		if (pos.i+1 > 0 && pos.i+1 < num_rows && pos.j >= 0 && pos.j < num_cols){
-			if(maze[pos.i+1][pos.j] == 'x'){
-				pos_t pos_aux;
-				pos_aux.i = pos.i+1;
-				pos_aux.j = pos.j;
-				valid_positions.push(pos_aux);
-			}else if(maze[pos.i+1][pos.j] == 's'){
-				cout<<maze[pos.i+1][pos.j+1]<<endl;
-
-				return true;
-			}
-		}
+	 	
 		
-		if (pos.i-1 >= 0 && pos.i-1 < num_rows && pos.j >= 0 && pos.j < num_cols){
-			if(maze[pos.i-1][pos.j] == 'x'){
-				pos_t pos_aux;
-				pos_aux.i = pos.i-1;
-				pos_aux.j = pos.j;
-				valid_positions.push(pos_aux);
-			}else if(maze[pos.i-1][pos.j] == 's'){
-				return true;
+		
+		
+		
+
+		while(!aux){
+			maze[pos.i][pos.j] = 'o';
+			this_thread::sleep_for(chrono::milliseconds(200));
+			if (pos.i >= 0 && pos.i < num_rows && pos.j + 1  > 0 && pos.j + 1 < num_cols){
+				if(maze[pos.i][pos.j+1] == 'x'){
+					pos_t pos_aux;
+					pos_aux.i = pos.i;
+					pos_aux.j = pos.j+1;
+					//valid_positions.push(pos_aux);
+					maze[pos.i][pos.j] = '.';
+					thread t1(walk, pos_aux);
+					t1.detach();
+				} else if(maze[pos.i][pos.j+1] == 's'){
+					aux = true;
+					return true;
+				}
 			}
+
+			if (pos.i >= 0 && pos.i < num_rows && pos.j - 1  >= 0 && pos.j - 1 < num_cols){
+				if(maze[pos.i][pos.j-1] == 'x'){
+					pos_t pos_aux;
+					pos_aux.i = pos.i;
+					pos_aux.j = pos.j-1;
+					maze[pos.i][pos.j] = '.';
+					//valid_positions.push(pos_aux);
+					thread t2(walk, pos_aux);
+					t2.detach();
+				}else if(maze[pos.i][pos.j-1] == 's'){
+					aux = true;
+					return true;
+				}
+			}
+
+			if (pos.i+1 > 0 && pos.i+1 < num_rows && pos.j >= 0 && pos.j < num_cols){
+				if(maze[pos.i+1][pos.j] == 'x'){
+					pos_t pos_aux;
+					pos_aux.i = pos.i+1;
+					pos_aux.j = pos.j;
+					maze[pos.i][pos.j] = '.';
+					//valid_positions.push(pos_aux);
+					thread t3(walk, pos_aux);
+					t3.detach();
+				}else if(maze[pos.i+1][pos.j] == 's'){
+					aux = true;
+					return true;
+				}
+			}
+
+			if (pos.i-1 >= 0 && pos.i-1 < num_rows && pos.j >= 0 && pos.j < num_cols){
+				if(maze[pos.i-1][pos.j] == 'x'){
+					pos_t pos_aux;
+					pos_aux.i = pos.i-1;
+					pos_aux.j = pos.j;
+					maze[pos.i][pos.j] = '.';
+					//valid_positions.push(pos_aux);
+					thread t4(walk, pos_aux);
+					t4.detach();
+
+				}else if(maze[pos.i-1][pos.j] == 's'){
+					aux = true;
+					return true;
+				}
+			}
+			maze[pos.i][pos.j] = '.';
 		}
-		maze[pos.i][pos.j] = '.';
-	
-		// Verifica se a pilha de posições nao esta vazia 
-		//Caso não esteja, pegar o primeiro valor de  valid_positions, remove-lo
-		// e chamar a funçao walk com esse valor
-		// Caso contrario, retornar falso
-		if (!valid_positions.empty()) {
-			pos_t next_position = valid_positions.top();
-			valid_positions.pop();
-			return walk(next_position);
-		}
+
 	return false;
 }
 
 int main(int argc, char* argv[]) {
 	// carregar o labirinto com o nome do arquivo recebido como argumento
-	pos_t initial_pos = load_maze("../data/maze7.txt");
+	pos_t initial_pos = load_maze("../data/maze2.txt");
 
 
 	// chamar a função de navegação
-	bool exit_found = walk(initial_pos);
+	//bool exit_found = walk(initial_pos);
 	// Tratar o retorno (imprimir mensagem)
-	if(exit_found == true)
+
+	thread t(walk, initial_pos);
+	t.detach();
+
+	while(!aux){
+		
+		print_maze();
+		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+		system("clear");
+	}
+
+	print_maze();
+	if(aux)
 	{
 		cout<<endl<<"Saída encontrada"<<endl;
 	} else{
