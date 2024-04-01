@@ -24,6 +24,9 @@ struct pos_t {
 	int j;
 };
 
+
+pos_t pos_atual;
+
 // Estrutura de dados contendo as próximas
 // posicões a serem exploradas no labirinto
 std::stack<pos_t> valid_positions;
@@ -92,6 +95,7 @@ void print_maze() {
 }
 
 
+
 // Função responsável pela navegação.
 // Recebe como entrada a posição initial e retorna um booleando indicando se a saída foi encontrada
 bool walk(pos_t pos) {
@@ -111,22 +115,21 @@ bool walk(pos_t pos) {
 		 	Caso alguma das posiçÕes validas seja igual a 's', retornar verdadeiro
 	 	*/
 
-	 	
-		
-		
-		
-		
 
 		while(!aux){
-			maze[pos.i][pos.j] = 'o';
+			maze[pos_atual.i][pos_atual.j] = '.';
 			this_thread::sleep_for(chrono::milliseconds(200));
+			maze[pos.i][pos.j] = 'o';
 			if (pos.i >= 0 && pos.i < num_rows && pos.j + 1  > 0 && pos.j + 1 < num_cols){
 				if(maze[pos.i][pos.j+1] == 'x'){
+					
 					pos_t pos_aux;
 					pos_aux.i = pos.i;
 					pos_aux.j = pos.j+1;
 					//valid_positions.push(pos_aux);
-					maze[pos.i][pos.j] = '.';
+					pos_atual = pos;
+					maze[pos.i][pos.j+1] = 'o';
+					//maze[pos.i][pos.j] = '.';
 					thread t1(walk, pos_aux);
 					t1.detach();
 				} else if(maze[pos.i][pos.j+1] == 's'){
@@ -140,7 +143,9 @@ bool walk(pos_t pos) {
 					pos_t pos_aux;
 					pos_aux.i = pos.i;
 					pos_aux.j = pos.j-1;
-					maze[pos.i][pos.j] = '.';
+					pos_atual = pos;
+					maze[pos.i][pos.j-1] = 'o';
+					//maze[pos.i][pos.j] = '.';
 					//valid_positions.push(pos_aux);
 					thread t2(walk, pos_aux);
 					t2.detach();
@@ -155,7 +160,9 @@ bool walk(pos_t pos) {
 					pos_t pos_aux;
 					pos_aux.i = pos.i+1;
 					pos_aux.j = pos.j;
-					maze[pos.i][pos.j] = '.';
+					pos_atual = pos;
+					maze[pos.i+1][pos.j] = 'o';
+					//maze[pos.i][pos.j] = '.';
 					//valid_positions.push(pos_aux);
 					thread t3(walk, pos_aux);
 					t3.detach();
@@ -170,7 +177,9 @@ bool walk(pos_t pos) {
 					pos_t pos_aux;
 					pos_aux.i = pos.i-1;
 					pos_aux.j = pos.j;
-					maze[pos.i][pos.j] = '.';
+					pos_atual = pos;
+					maze[pos.i-1][pos.j] = 'o';
+					//maze[pos.i][pos.j] = '.';*/
 					//valid_positions.push(pos_aux);
 					thread t4(walk, pos_aux);
 					t4.detach();
@@ -188,8 +197,9 @@ bool walk(pos_t pos) {
 
 int main(int argc, char* argv[]) {
 	// carregar o labirinto com o nome do arquivo recebido como argumento
-	pos_t initial_pos = load_maze("../data/maze2.txt");
+	pos_t initial_pos = load_maze("../data/maze6.txt");
 
+	pos_atual = initial_pos;
 
 	// chamar a função de navegação
 	//bool exit_found = walk(initial_pos);
