@@ -41,7 +41,7 @@ Position load_maze(const std::string& file_name) {
 
    
     
-      arquivo >> num_rows >> num_cols;
+    arquivo >> num_rows >> num_cols;
     maze.resize(num_rows, std::vector<char>(num_cols));
 
     Position start{-1, -1};
@@ -70,7 +70,6 @@ void print_maze() {
         }
         printf("\n");
     }
-    usleep(10000);
 }
 
 // Função para verificar se uma posição é válida
@@ -80,7 +79,7 @@ bool is_valid_position(int row, int col) {
     //    (row >= 0 && row < num_rows && col >= 0 && col < num_cols)
     // 2. Verifique se a posição é um caminho válido (maze[row][col] == 'x')
     // 3. Retorne true se ambas as condições forem verdadeiras, false caso contrário
-    if (row >= 0 && row < num_rows && col >= 0 && col < num_cols-1){
+    if (row >= 0 && row < num_rows && col >= 0 && col < num_cols){
         if(maze[row][col] == 'x' || maze[row][col] == 's'){
             return true;    
         }
@@ -105,11 +104,13 @@ bool walk(Position pos) {
     //    b. Chame walk recursivamente para esta posição
     //    c. Se walk retornar true, propague o retorno (retorne true)
     // 7. Se todas as posições foram exploradas sem encontrar a saída, retorne false
+    cout<<pos.row + " " + pos.col<<endl;
     if (maze[pos.row][pos.col] == 's') {
         return true;  
     }
     maze[pos.row][pos.col] = 'o';
     system("clear");
+
     print_maze();
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     if (is_valid_position(pos.row, pos.col+1)){
@@ -117,6 +118,9 @@ bool walk(Position pos) {
         pos_aux.row = pos.row;
         pos_aux.col = pos.col+1;
         valid_positions.push(pos_aux);
+        if (maze[pos.row][pos.col+1] == 's') {
+            return true;  
+        }
     } 
 
     if (is_valid_position(pos.row, pos.col-1)){
@@ -124,12 +128,18 @@ bool walk(Position pos) {
         pos_aux.row = pos.row;
         pos_aux.col = pos.col-1;
         valid_positions.push(pos_aux);
+        if (maze[pos.row][pos.col-1] == 's') {
+            return true;  
+        }
     } 
     if (is_valid_position(pos.row+1, pos.col)){
         Position pos_aux;
         pos_aux.row = pos.row+1;
         pos_aux.col = pos.col;
         valid_positions.push(pos_aux);
+        if (maze[pos.row+1][pos.col] == 's') {
+            return true;  
+        }
     } 
         
     if (is_valid_position(pos.row-1, pos.col)){
@@ -137,6 +147,9 @@ bool walk(Position pos) {
         pos_aux.row = pos.row-1;
         pos_aux.col = pos.col;
         valid_positions.push(pos_aux);
+        if (maze[pos.row-1][pos.col] == 's') {
+            return true;  
+        }
     } 
     
     maze[pos.row][pos.col] = '.';
@@ -147,6 +160,7 @@ bool walk(Position pos) {
     // Caso contrario, retornar falso
     if (!valid_positions.empty()) {
         Position next_position = valid_positions.top();
+        
         valid_positions.pop();
         return walk(next_position);
     }
