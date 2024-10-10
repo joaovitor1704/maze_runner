@@ -9,6 +9,10 @@
 // Representação do labirinto
 using Maze = std::vector<std::vector<char>>;
 
+bool exit_found = false;
+
+
+
 using namespace std;
 
 // Estrutura para representar uma posição no labirinto
@@ -16,6 +20,8 @@ struct Position {
     int row;
     int col;
 };
+
+Position pos_atual;
 
 // Variáveis globais
 Maze maze;
@@ -80,9 +86,15 @@ bool is_valid_position(int row, int col) {
     // 2. Verifique se a posição é um caminho válido (maze[row][col] == 'x')
     // 3. Retorne true se ambas as condições forem verdadeiras, false caso contrário
     if (row >= 0 && row < num_rows && col >= 0 && col < num_cols){
-        if(maze[row][col] == 'x' || maze[row][col] == 's'){
+        if(maze[row][col] == 'x'){
             return true;    
         }
+        if (maze[row][col] == 's')
+        {
+            exit_found = true;
+            return true;
+        }
+        
     }
     return false; // Placeholder - substitua pela lógica correta
 }
@@ -104,66 +116,80 @@ bool walk(Position pos) {
     //    b. Chame walk recursivamente para esta posição
     //    c. Se walk retornar true, propague o retorno (retorne true)
     // 7. Se todas as posições foram exploradas sem encontrar a saída, retorne false
-    cout<<pos.row + " " + pos.col<<endl;
-    if (maze[pos.row][pos.col] == 's') {
-        return true;  
-    }
-    maze[pos.row][pos.col] = 'o';
-    system("clear");
+    while(!exit_found){
 
-    print_maze();
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    if (is_valid_position(pos.row, pos.col+1)){
-        Position pos_aux;
-        pos_aux.row = pos.row;
-        pos_aux.col = pos.col+1;
-        valid_positions.push(pos_aux);
-        if (maze[pos.row][pos.col+1] == 's') {
-            return true;  
-        }
-    } 
+        maze[pos_atual.row][pos_atual.col] = '.';
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        maze[pos.row][pos.col] = 'o';
 
-    if (is_valid_position(pos.row, pos.col-1)){
-        Position pos_aux;
-        pos_aux.row = pos.row;
-        pos_aux.col = pos.col-1;
-        valid_positions.push(pos_aux);
-        if (maze[pos.row][pos.col-1] == 's') {
-            return true;  
-        }
-    } 
-    if (is_valid_position(pos.row+1, pos.col)){
-        Position pos_aux;
-        pos_aux.row = pos.row+1;
-        pos_aux.col = pos.col;
-        valid_positions.push(pos_aux);
-        if (maze[pos.row+1][pos.col] == 's') {
-            return true;  
-        }
-    } 
         
-    if (is_valid_position(pos.row-1, pos.col)){
-        Position pos_aux;
-        pos_aux.row = pos.row-1;
-        pos_aux.col = pos.col;
-        valid_positions.push(pos_aux);
-        if (maze[pos.row-1][pos.col] == 's') {
-            return true;  
+        if (is_valid_position(pos.row, pos.col+1)){
+            Position pos_aux;
+            pos_aux.row = pos.row;
+            pos_aux.col = pos.col+1;
+            //valid_positions.push(pos_aux);
+            pos_atual = pos;
+			maze[pos.row][pos.col+1] = 'o';
+            thread t1(walk, pos_aux);
+	    	t1.detach();
+        } 
+
+        
+
+        if (is_valid_position(pos.row, pos.col-1)){
+            Position pos_aux;
+            pos_aux.row = pos.row;
+            pos_aux.col = pos.col-1;
+            //valid_positions.push(pos_aux);
+            pos_atual = pos;
+			maze[pos.row][pos.col-1] = 'o';
+            thread t2(walk, pos_aux);
+	    	t2.detach();
+        } 
+        
+
+         
+        if (is_valid_position(pos.row+1, pos.col)){
+            Position pos_aux;
+            pos_aux.row = pos.row+1;
+            pos_aux.col = pos.col;
+            //valid_positions.push(pos_aux);
+            pos_atual = pos;
+			maze[pos.row+1][pos.col] = 'o';
+            thread t3(walk, pos_aux);
+	    	t3.detach();
         }
-    } 
+
+
     
-    maze[pos.row][pos.col] = '.';
+
+        if (is_valid_position(pos.row-1, pos.col)){
+            Position pos_aux;
+            pos_aux.row = pos.row-1;
+            pos_aux.col = pos.col;
+            //valid_positions.push(pos_aux);
+            pos_atual = pos;
+			maze[pos.row-1][pos.col] = 'o';
+            thread t4(walk, pos_aux);
+	    	t4.detach();
+        }
+
+
+         
+    
+        maze[pos.row][pos.col] = '.';
+    }
     
     // Verifica se a pilha de posições nao esta vazia 
     //Caso não esteja, pegar o primeiro valor de  valid_positions, remove-lo
     // e chamar a funçao walk com esse valor
     // Caso contrario, retornar falso
-    if (!valid_positions.empty()) {
+    /*if (!valid_positions.empty()) {
         Position next_position = valid_positions.top();
         
         valid_positions.pop();
         return walk(next_position);
-    }
+    }*/
 
     return false; // Placeholder - substitua pela lógica correta
 }
@@ -180,7 +206,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    bool exit_found = walk(initial_pos);
+    thread t(walk, initial_pos);
+	t.detach();
+
+    while(!exit_found){
+		print_maze();
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		system("clear");
+	}
+
+    print_maze();
 
     if (exit_found) {
         std::cout << "Saída encontrada!" << std::endl;
